@@ -1,0 +1,15 @@
+FROM vs-alerts
+| WHERE alert.id IN ("AL-1348", "AL-1340")
+| KEEP @timestamp, alert.id, rule.name, alert.status, alert.closed_by, alert.closure_note
+
+// Alerts raised right after the log wipe
+FROM vs-alerts
+| WHERE @timestamp >= "2027-02-09T03:10:00Z" AND @timestamp <= "2027-02-10T00:00:00Z"
+| KEEP @timestamp, alert.id, rule.name, alert.status, alert.closed_by, host.name, user.name
+| SORT @timestamp ASC
+| LIMIT 50
+
+// Egress that should have been denied
+FROM vs-network
+| WHERE destination.ip == "203.0.113.90"
+| STATS flows = COUNT(*), gb = ROUND(SUM(network.bytes_out) / 1000000000.0, 1) BY event.action

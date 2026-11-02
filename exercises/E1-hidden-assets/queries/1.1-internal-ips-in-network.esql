@@ -1,0 +1,10 @@
+// Internal source IPs seen in the network logs, with event counts
+FROM vs-network
+| WHERE CIDR_MATCH(source.ip, "10.10.0.0/16", "10.20.0.0/16", "10.30.0.0/16")
+| STATS events = COUNT(*) BY source.ip
+| SORT source.ip
+
+// Compare against the inventory (the five candidates + jump hosts)
+FROM vs-inventario
+| WHERE ip IN ("10.20.50.11", "10.10.12.43", "10.10.77.3", "10.20.40.7", "10.30.9.40") OR tipo == "Salto"
+| KEEP hostname, ip, tipo

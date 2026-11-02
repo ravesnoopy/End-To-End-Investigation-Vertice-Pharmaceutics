@@ -1,0 +1,10 @@
+// What does ETL-LEGACY-02 do? (first three process starts)
+FROM vs-endpoint
+| WHERE host.name == "ETL-LEGACY-02" AND event.action == "process_start"
+| KEEP @timestamp, process.command_line, process.executable, process.parent.name
+| LIMIT 3
+
+// Event mix for the same host
+FROM vs-endpoint
+| WHERE host.name == "ETL-LEGACY-02"
+| STATS events = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY event.action, user.name, process.name

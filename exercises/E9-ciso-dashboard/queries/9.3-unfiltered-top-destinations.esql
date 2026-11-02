@@ -1,0 +1,5 @@
+FROM vs-network
+| WHERE event.dataset == "firewall.flow"
+| STATS gb = ROUND(SUM(network.bytes_out) / 1000000000.0, 1), flows = COUNT(*) BY destination.ip
+| SORT gb DESC
+| LIMIT 10

@@ -1,0 +1,18 @@
+// Repeated TXT queries: which domains, how many hosts?
+FROM vs-dns
+| WHERE dns.question.type == "TXT"
+| STATS queries = COUNT(*), hosts = COUNT_DISTINCT(source.hostname), first = MIN(@timestamp), last = MAX(@timestamp) BY dns.question.name
+| SORT queries DESC
+| LIMIT 20
+
+// The beacon: host, type, window, volume, unique sub-domains
+FROM vs-dns
+| WHERE dns.question.name LIKE "*.cdn-metrics-sync.example"
+| STATS queries = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp), subdomains = COUNT_DISTINCT(dns.question.name) BY source.hostname, source.ip, dns.question.type
+
+// Average interval (≈300 s)
+FROM vs-dns
+| WHERE dns.question.name LIKE "*.cdn-metrics-sync.example"
+| EVAL t = TO_LONG(@timestamp) / 1000
+| STATS n = COUNT(*), first = MIN(t), last = MAX(t)
+| EVAL avg_interval_s = (last - first) / (n - 1)

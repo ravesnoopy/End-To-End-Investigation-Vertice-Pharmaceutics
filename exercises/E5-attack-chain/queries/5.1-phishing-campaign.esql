@@ -1,0 +1,3 @@
+FROM vs-network
+| WHERE event.dataset == "mail.gateway" AND (email.from.address LIKE "*vertlce*" OR email.from.address LIKE "*vertice*")
+| STATS mails = COUNT(*), recipients = COUNT_DISTINCT(email.to.address), first = MIN(@timestamp), last = MAX(@timestamp), attachments = MAX(email.attachments.count) BY email.from.address, email.subject

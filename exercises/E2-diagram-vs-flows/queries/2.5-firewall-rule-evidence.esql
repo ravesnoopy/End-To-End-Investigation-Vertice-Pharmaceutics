@@ -1,0 +1,4 @@
+// The flows were ALLOWED, not denied
+FROM vs-network
+| WHERE source.ip == "10.20.50.11" AND destination.ip == "203.0.113.90"
+| STATS flows = COUNT(*) BY event.action

@@ -1,0 +1,5 @@
+// Non-laptop hosts reporting endpoint telemetry
+FROM vs-endpoint
+| WHERE NOT host.name LIKE "*-LT-*"
+| STATS events = COUNT(*) BY host.name
+| SORT events DESC

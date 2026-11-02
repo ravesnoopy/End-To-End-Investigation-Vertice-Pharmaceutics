@@ -1,0 +1,12 @@
+FROM vs-cloud
+| WHERE event.action == "CreateAccessKey"
+| KEEP @timestamp, user.name, aws.target_user, aws.access_key_id, aws.new_access_key_id, source.ip, mfa.used, labels.ticket, labels.note, event.outcome, user_agent.original
+| SORT @timestamp ASC
+| LIMIT 10
+
+// The command that triggered it
+FROM vs-endpoint
+| WHERE host.name == "JMP-BR-01" AND TO_LOWER(process.command_line) LIKE "*-enc*"
+| KEEP @timestamp, user.name, process.command_line
+| SORT @timestamp ASC
+| LIMIT 10

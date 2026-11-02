@@ -1,0 +1,17 @@
+FROM vs-cloud
+| WHERE event.action == "GetObject" AND aws.access_key_id == "AKIAVSBKLG00NEW0001" AND aws.bucket == "vs-patient-records-prod"
+| STATS events = COUNT(*), bytes_out = SUM(aws.bytes_out), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name, source.ip, event.outcome
+| EVAL gb = bytes_out / 1000000000.0
+
+// Per night
+FROM vs-cloud
+| WHERE event.action == "GetObject" AND aws.access_key_id == "AKIAVSBKLG00NEW0001"
+| EVAL day = DATE_TRUNC(1 day, @timestamp)
+| STATS events = COUNT(*), bytes_out = SUM(aws.bytes_out), start = MIN(@timestamp), end = MAX(@timestamp) BY day
+| EVAL gb = bytes_out / 1000000000.0
+| SORT day ASC
+
+// Control: any other GetObject by the account?
+FROM vs-cloud
+| WHERE event.action == "GetObject" AND user.name == "svc-backup-legacy"
+| STATS events = COUNT(*), bytes_out = SUM(aws.bytes_out) BY aws.access_key_id, aws.bucket

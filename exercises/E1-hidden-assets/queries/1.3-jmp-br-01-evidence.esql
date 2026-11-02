@@ -1,0 +1,14 @@
+// AUTH: RDP logons (type 10) on JMP-BR-01
+FROM vs-auth
+| WHERE host.name == "JMP-BR-01" AND TO_STRING(winlog.logon.type) == "10"
+| STATS logons = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name, source.ip
+
+// ENDPOINT: encoded PowerShell on JMP-BR-01
+FROM vs-endpoint
+| WHERE host.name == "JMP-BR-01" AND TO_LOWER(process.command_line) LIKE "*-enc*"
+| STATS commands = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name
+
+// NETWORK: outbound volume to the external destination
+FROM vs-network
+| WHERE source.ip == "10.20.50.11" AND destination.ip == "203.0.113.90"
+| STATS flows = COUNT(*), bytes_out = SUM(network.bytes_out)

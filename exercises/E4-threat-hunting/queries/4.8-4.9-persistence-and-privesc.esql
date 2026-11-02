@@ -1,0 +1,41 @@
+// Event mix on JMP-BR-01
+FROM vs-endpoint
+| WHERE host.name == "JMP-BR-01"
+| STATS events = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY event.action, event.code
+| SORT events DESC
+| LIMIT 30
+
+// Everything except heartbeats (persistence commands)
+FROM vs-endpoint
+| WHERE host.name == "JMP-BR-01" AND event.action != "agent_heartbeat"
+| KEEP @timestamp, event.action, event.code, user.name, process.name, process.command_line, process.executable, process.parent.name, winlog.task_name
+| SORT @timestamp ASC
+| LIMIT 100
+
+// Legitimate comparison: l.campos on APP-BR-01, 10 Feb (ticket CHG-1192)
+FROM vs-endpoint
+| WHERE host.name == "APP-BR-01" AND @timestamp >= "2027-02-10T00:00:00Z" AND @timestamp < "2027-02-11T00:00:00Z"
+    AND event.action != "agent_heartbeat"
+| KEEP @timestamp, event.action, event.code, user.name, process.name, process.command_line, process.executable, process.parent.name, winlog.task_name, labels.ticket
+| SORT @timestamp ASC
+| LIMIT 100
+
+// 4.9 Elevated processes on JMP-BR-01
+FROM vs-endpoint
+| WHERE host.name == "JMP-BR-01" AND process.elevated == true
+| KEEP @timestamp, user.name, process.name, process.command_line, process.parent.name, process.elevated
+| SORT @timestamp ASC
+| LIMIT 20
+
+// Steps right before the first elevated process
+FROM vs-endpoint
+| WHERE host.name == "JMP-BR-01" AND user.name == "r.duarte"
+    AND @timestamp >= "2027-02-02T03:20:00Z" AND @timestamp <= "2027-02-02T03:28:00Z"
+| KEEP @timestamp, process.name, process.command_line, process.parent.name, process.elevated
+| SORT @timestamp ASC
+
+// Ticket check
+FROM vs-cambios
+| KEEP ticket, descripcion, inicio_utc, fin_utc, hosts_o_cuentas, responsable, estado
+| SORT inicio_utc ASC
+| LIMIT 20

@@ -1,0 +1,12 @@
+FROM vs-inventario
+| WHERE hostname == "FS-MX-02"
+| KEEP hostname, ip, sitio, tipo, criticidad, propietario
+
+FROM vs-network
+| WHERE event.dataset == "firewall.flow"
+    AND (source.ip == "10.10.30.12" OR destination.ip == "10.10.30.12")
+    AND @timestamp >= "2027-02-05T22:00:47Z" AND @timestamp <= "2027-02-06T08:00:42Z"
+| STATS flows = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp), bytes_out = SUM(network.bytes_out), bytes_in = SUM(network.bytes_in)
+    BY source.ip, destination.ip, destination.port, event.action
+| SORT flows DESC
+| LIMIT 50

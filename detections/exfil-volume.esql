@@ -1,0 +1,16 @@
+// Detection : Large outbound volume to a non-private destination
+// MITRE     : T1048 - Exfiltration Over Alternative Protocol
+//             (not T1041: no evidence this traffic rides a C2 channel)
+// Data view : vs-network
+// Logic     : >= 5 GB per source, destination and day, destination outside RFC1918
+// Expected  : 3 rows (JMP-BR-01 -> 203.0.113.90: 14.0 / 12.7 / 11.5 GB)
+// Avoided   : ~60 GB/night internal backup to 10.10.30.5 (private + allowed in diagram)
+// Limits    : misses theft to private destinations or < 5 GB/day; detects volume,
+//             not destination reputation -> pair with a known-external-destination list
+FROM vs-network
+| WHERE event.dataset == "firewall.flow"
+    AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+| EVAL day = DATE_TRUNC(1 day, @timestamp)
+| STATS gb = ROUND(SUM(network.bytes_out) / 1000000000.0, 1), flows = COUNT(*) BY source.ip, destination.ip, day
+| WHERE gb >= 5
+| SORT day ASC

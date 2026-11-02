@@ -1,0 +1,13 @@
+FROM vs-alerts
+| WHERE alert.id IN ("AL-1343", "AL-1344", "AL-1345")
+| KEEP @timestamp, alert.id, alert.status, alert.closed_by, alert.closure_note, alert.severity
+| SORT @timestamp ASC
+
+// Everything around the exfiltration window that is not scanner noise
+FROM vs-alerts
+| WHERE @timestamp >= "2027-02-05T00:00:00Z" AND @timestamp < "2027-02-10T00:00:00Z"
+    AND (user.name != "svc-vulnscan" OR user.name IS NULL)
+    AND (destination.ip == "203.0.113.90" OR host.name == "JMP-BR-01")
+| KEEP @timestamp, alert.id, alert.status, alert.closed_by, alert.closure_note, host.name, destination.ip, rule.name
+| SORT @timestamp ASC
+| LIMIT 30

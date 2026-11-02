@@ -1,0 +1,17 @@
+// Activity from 192.0.2.20 by account, key, action and user agent
+FROM vs-cloud
+| WHERE source.ip == "192.0.2.20"
+| STATS events = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name, aws.access_key_id, event.action, user_agent.original
+| SORT events DESC
+| LIMIT 30
+
+// Source IPs in the cloud log (192.0.2.20 = 2,350 events, 7 users)
+FROM vs-cloud
+| STATS events = COUNT(*), users = COUNT_DISTINCT(user.name) BY source.ip
+| SORT events DESC
+| LIMIT 20
+
+// Is 192.0.2.20 visible in the network logs? (expected: 0 rows)
+FROM vs-network
+| WHERE source.ip == "192.0.2.20" OR destination.ip == "192.0.2.20"
+| STATS flows = COUNT(*) BY source.ip, destination.ip, destination.port, event.dataset

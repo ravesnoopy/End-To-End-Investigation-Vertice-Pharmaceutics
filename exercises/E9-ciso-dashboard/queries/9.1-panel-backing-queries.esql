@@ -1,0 +1,13 @@
+// Panel 1 - busiest days in vs-auth
+FROM vs-auth
+| EVAL day = DATE_TRUNC(1 day, @timestamp)
+| STATS events = COUNT(*) BY day
+| SORT events DESC
+| LIMIT 3
+
+// Panel 5 - IAM events over time
+FROM vs-cloud
+| WHERE event.provider == "iam.amazonaws.example"
+| EVAL day = DATE_TRUNC(1 day, @timestamp)
+| STATS events = COUNT(*) BY day
+| SORT day ASC

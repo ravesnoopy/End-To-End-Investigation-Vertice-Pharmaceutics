@@ -1,0 +1,17 @@
+// Nightly volume received by 10.10.30.5 (stable → not a finding)
+FROM vs-network
+| WHERE destination.ip == "10.10.30.5"
+| EVAL day = DATE_TRUNC(1 day, @timestamp)
+| STATS flows = COUNT(*), bytes_out = SUM(network.bytes_out) BY day
+| EVAL gb = ROUND(bytes_out / 1000000000.0, 1)
+| SORT day ASC
+
+// Who sends to it?
+FROM vs-network
+| WHERE destination.ip == "10.10.30.5"
+| STATS flows = COUNT(*) BY source.ip, destination.port
+
+// Inventory check for the senders
+FROM vs-inventario
+| WHERE ip IN ("10.10.30.20", "10.10.31.11", "10.10.30.5", "10.10.30.12")
+| KEEP asset_id, hostname, ip, tipo, sitio, criticidad

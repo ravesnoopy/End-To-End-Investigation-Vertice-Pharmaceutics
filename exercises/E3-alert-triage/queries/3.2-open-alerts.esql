@@ -1,0 +1,9 @@
+FROM vs-alerts
+| WHERE alert.status == "open"
+| KEEP @timestamp, alert.id, rule.name, alert.severity, alert.category, host.name, user.name, source.ip, destination.ip
+| SORT @timestamp ASC
+| LIMIT 20
+
+// Status distribution
+FROM vs-alerts
+| STATS alerts = COUNT(*) BY alert.status

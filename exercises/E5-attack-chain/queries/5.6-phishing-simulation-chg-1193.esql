@@ -1,0 +1,23 @@
+FROM vs-network
+| WHERE event.dataset == "mail.gateway"
+    AND (email.from.address LIKE "*campus-seguridad*" OR email.subject LIKE "*simulacro*" OR labels.campaign IS NOT NULL)
+| STATS mails = COUNT(*), recipients = COUNT_DISTINCT(email.to.address), first = MIN(@timestamp), last = MAX(@timestamp), attachments = MAX(email.attachments.count) BY email.from.address, email.subject, labels.campaign
+
+FROM vs-network
+| WHERE event.dataset == "proxy.web" AND url.domain LIKE "*campus-seguridad*"
+| STATS hits = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name, source.hostname, source.ip, destination.ip, http.request.method, http.response.status_code
+| SORT first
+
+// Follow-up of the 7 users who submitted credentials
+FROM vs-auth
+| WHERE user.name IN ("p.garcia", "t.santos", "s.pinto", "e.vargas", "o.lopez", "a.oliveira", "p.ortiz")
+    AND @timestamp >= "2027-02-10T14:05:00Z"
+| STATS events = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name, event.dataset, event.action, source.ip
+| SORT user.name, first
+
+// The 14 Feb MFA oddity for p.ortiz
+FROM vs-auth
+| WHERE source.ip == "198.18.55.27" OR (user.name == "p.ortiz" AND event.dataset IN ("idp.mfa", "vpn.gateway"))
+| KEEP @timestamp, event.dataset, event.action, event.outcome, mfa.result, user.name, source.ip, source.geo.country_iso_code, vpn.assigned_ip
+| SORT @timestamp ASC
+| LIMIT 50

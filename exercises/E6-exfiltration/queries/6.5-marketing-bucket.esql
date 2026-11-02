@@ -1,0 +1,19 @@
+FROM vs-cloud
+| WHERE aws.bucket == "vertice-marketing-assets"
+| STATS events = COUNT(*), bytes_out = SUM(aws.bytes_out), first = MIN(@timestamp), last = MAX(@timestamp), ips = COUNT_DISTINCT(source.ip), objects = COUNT_DISTINCT(aws.object.key) BY user.name, event.action, aws.access_key_id
+| EVAL gb = bytes_out / 1000000000.0
+| SORT bytes_out DESC
+| LIMIT 20
+
+// The real finding: who changed the bucket policy?
+FROM vs-cloud
+| WHERE aws.bucket == "vertice-marketing-assets" AND event.action != "GetObject"
+| KEEP @timestamp, user.name, event.action, source.ip, labels.note, labels.ticket
+| SORT @timestamp ASC
+| LIMIT 20
+
+// No ticket covers it
+FROM vs-cambios
+| KEEP ticket, descripcion, inicio_utc, fin_utc, hosts_o_cuentas, responsable, estado
+| SORT inicio_utc ASC
+| LIMIT 20

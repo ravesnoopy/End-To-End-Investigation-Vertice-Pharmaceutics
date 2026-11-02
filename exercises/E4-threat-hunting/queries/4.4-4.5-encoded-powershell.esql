@@ -1,0 +1,33 @@
+// By host and user
+FROM vs-endpoint
+| WHERE TO_LOWER(process.command_line) LIKE "*-encodedcommand*"
+| STATS commands = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY host.name, user.name
+| SORT commands DESC
+| LIMIT 30
+
+// Full command lines on JMP-BR-01 (decode with:
+//   echo <base64> | base64 -d | iconv -f UTF-16LE -t UTF-8 )
+FROM vs-endpoint
+| WHERE host.name == "JMP-BR-01" AND TO_LOWER(process.command_line) LIKE "*-enc*"
+| KEEP @timestamp, user.name, process.command_line
+| SORT @timestamp ASC
+| LIMIT 10
+
+// 4.5 Split by label: SCCM 32 · CHG-1187 9 · unlabelled (attacker) 3
+FROM vs-endpoint
+| WHERE TO_LOWER(process.command_line) LIKE "*-encodedcommand*"
+| STATS commands = COUNT(*) BY labels.managed_by, labels.ticket, user.name
+| SORT commands DESC
+| LIMIT 30
+
+// Lead for the 44 vs 46 gap: variants of the parameter
+FROM vs-endpoint
+| WHERE TO_LOWER(process.command_line) LIKE "*-enc*" AND NOT TO_LOWER(process.command_line) LIKE "*-encodedcommand*"
+| KEEP @timestamp, host.name, user.name, process.command_line
+| SORT @timestamp ASC
+| LIMIT 20
+
+// Validate the ticket window
+FROM vs-endpoint
+| WHERE labels.ticket == "CHG-1187"
+| STATS commands = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY host.name, user.name

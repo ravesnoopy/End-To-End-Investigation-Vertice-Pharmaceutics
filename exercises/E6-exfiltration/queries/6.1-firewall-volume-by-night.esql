@@ -1,0 +1,11 @@
+FROM vs-network
+| WHERE destination.ip == "203.0.113.90"
+| EVAL day = DATE_TRUNC(1 day, @timestamp)
+| STATS flows = COUNT(*), bytes_out = SUM(network.bytes_out), start = MIN(@timestamp), end = MAX(@timestamp) BY day
+| EVAL gb = bytes_out / 1000000000.0
+| SORT day ASC
+
+// Total, and who sends to that IP
+FROM vs-network
+| WHERE destination.ip == "203.0.113.90"
+| STATS flows = COUNT(*), bytes_out = SUM(network.bytes_out) BY source.ip

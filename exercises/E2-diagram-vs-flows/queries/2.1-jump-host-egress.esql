@@ -1,0 +1,10 @@
+FROM vs-network
+| WHERE source.hostname LIKE "JMP-*"
+| STATS flows = COUNT(*) BY source.hostname, source.ip
+| SORT source.hostname ASC
+| LIMIT 20
+
+// External destinations of the offending host
+FROM vs-network
+| WHERE source.ip == "10.20.50.11" AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+| STATS flows = COUNT(*), bytes_out = SUM(network.bytes_out) BY destination.ip

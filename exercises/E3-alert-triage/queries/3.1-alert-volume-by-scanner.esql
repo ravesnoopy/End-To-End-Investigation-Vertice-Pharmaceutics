@@ -1,0 +1,10 @@
+FROM vs-alerts
+| STATS total = COUNT(*), scan = COUNT(CASE(user.name == "svc-vulnscan", 1, null))
+| EVAL pct = ROUND(scan * 100.0 / total, 1)
+
+// Control: what does the scanner IP generate?
+FROM vs-alerts
+| WHERE source.ip == "10.20.5.15"
+| STATS alerts = COUNT(*) BY user.name, rule.name
+| SORT alerts DESC
+| LIMIT 20

@@ -1,0 +1,21 @@
+// Heartbeat counts per host: the anomalous ones have fewer
+FROM vs-endpoint
+| WHERE event.action == "agent_heartbeat"
+| STATS heartbeats = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY host.name
+| SORT heartbeats ASC
+| LIMIT 60
+
+// Days with fewer than 12 heartbeats for the two suspects
+FROM vs-endpoint
+| WHERE event.action == "agent_heartbeat" AND host.name IN ("FS-MX-02", "JMP-BR-01")
+| EVAL day = DATE_TRUNC(1 day, @timestamp)
+| STATS heartbeats = COUNT(*) BY host.name, day
+| WHERE heartbeats < 12
+| SORT host.name, day
+
+// Inspect the gap
+FROM vs-endpoint
+| WHERE host.name == "FS-MX-02" AND @timestamp >= "2027-02-05T18:00:00Z" AND @timestamp <= "2027-02-06T14:00:00Z"
+| KEEP @timestamp, event.action, agent.status, user.name, process.name
+| SORT @timestamp ASC
+| LIMIT 50

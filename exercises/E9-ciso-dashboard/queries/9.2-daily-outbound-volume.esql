@@ -1,0 +1,15 @@
+FROM vs-network
+| WHERE event.dataset == "firewall.flow"
+    AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+| EVAL day = DATE_TRUNC(1 day, @timestamp)
+| STATS gb = ROUND(SUM(network.bytes_out) / 1000000000.0, 2) BY day
+| SORT gb DESC
+| LIMIT 5
+
+// Open lead: what is the extra ~0.53 GB on 6 Feb?
+FROM vs-network
+| WHERE event.dataset == "firewall.flow"
+    AND NOT CIDR_MATCH(destination.ip, "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+    AND @timestamp >= "2027-02-06T00:00:00Z" AND @timestamp < "2027-02-07T00:00:00Z"
+| STATS gb = ROUND(SUM(network.bytes_out) / 1000000000.0, 2), flows = COUNT(*) BY source.ip, destination.ip
+| SORT gb DESC

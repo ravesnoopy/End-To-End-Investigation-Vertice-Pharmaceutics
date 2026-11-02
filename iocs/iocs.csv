@@ -1,0 +1,19 @@
+type,value,context,first_seen_utc
+domain,vertlce-salud.example,Phishing domain (homoglyph: lowercase L for i),2027-02-01T14:18:20Z
+email,it-helpdesk@vertlce-salud.example,Phishing sender,2027-02-01T14:18:20Z
+ip,198.51.100.201,Server behind the fake VPN-renewal page,2027-02-01T14:23:05Z
+url_path,/vpn/renew/submit,Credential-capture endpoint (POST -> 302),2027-02-01T14:23:46Z
+ip,203.0.113.44,Attacker MFA/VPN source (NL),2027-02-02T02:08:13Z
+ip,10.99.0.17,VPN pool IP assigned to the attacker session,2027-02-02T02:44:04Z
+host,JMP-BR-01,Pivot host - not in inventory (10.20.50.11),2027-02-02T02:58:41Z
+account,r.duarte,Compromised user,2027-02-01T14:23:46Z
+domain,cdn-metrics-sync.example,DNS TXT beacon every ~300 s (C2),2027-02-02T03:21:08Z
+file,C:\ProgramData\Microsoft\Crypto\svc32.exe,Persistence / elevated binary,2027-02-02T03:27:03Z
+scheduled_task,MicrosoftEdgeUpdateTaskMachineCore2,Persistence (imitates Edge Update),2027-02-02T03:41:30Z
+registry,HKLM\Software\Microsoft\Windows\CurrentVersion\Run\SvcUpdate,Persistence (Run key),2027-02-02T03:48:12Z
+account,svc_helpdesk,Local admin created by attacker,2027-02-03T01:22:40Z
+aws_key,AKIAVSETL00OLD0001,Compromised key used to create the new one (svc-etl-pipeline),2027-02-03T01:17:02Z
+aws_key,AKIAVSBKLG00NEW0001,Malicious key for svc-backup-legacy,2027-02-03T01:17:02Z
+ip,192.0.2.20,Cloud API source IP shared by 7 accounts (not attributable),2027-02-06T02:00:03Z
+ip,203.0.113.90,Exfiltration destination (38.2 GB),2027-02-06T02:01:00Z
+bucket,vs-patient-records-prod,Data stolen (403 reads / 401 objects),2027-02-06T02:00:03Z

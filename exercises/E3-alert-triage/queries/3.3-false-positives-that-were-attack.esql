@@ -1,0 +1,7 @@
+FROM vs-alerts
+| WHERE alert.status == "closed_false_positive"
+    AND (host.name == "JMP-BR-01" OR user.name IN ("r.duarte", "svc-backup-legacy")
+         OR destination.ip == "203.0.113.90" OR source.ip == "10.99.0.17")
+| KEEP @timestamp, alert.id, rule.name, alert.severity, host.name, user.name, source.ip, destination.ip, alert.closed_by, alert.closure_note
+| SORT @timestamp ASC
+| LIMIT 50

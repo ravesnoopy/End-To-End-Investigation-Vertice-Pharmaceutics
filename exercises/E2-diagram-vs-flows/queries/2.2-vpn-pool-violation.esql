@@ -1,0 +1,3 @@
+FROM vs-network
+| WHERE CIDR_MATCH(source.ip, "10.99.0.0/22")
+| STATS flows = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY source.ip, destination.ip, destination.port

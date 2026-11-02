@@ -1,0 +1,6 @@
+FROM vs-endpoint
+| WHERE host.name == "JMP-BR-01" AND @timestamp >= "2027-02-09T00:00:00Z" AND @timestamp <= "2027-02-09T23:59:59Z"
+    AND (event.action != "process_start" OR process.name == "wevtutil.exe")
+| KEEP @timestamp, event.action, event.code, agent.status, user.name, process.name, process.command_line
+| SORT @timestamp ASC
+| LIMIT 50

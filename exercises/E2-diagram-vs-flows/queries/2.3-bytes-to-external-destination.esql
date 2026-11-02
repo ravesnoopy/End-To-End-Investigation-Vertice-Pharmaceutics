@@ -1,0 +1,13 @@
+// Total
+FROM vs-network
+| WHERE source.ip == "10.20.50.11" AND destination.ip == "203.0.113.90"
+| STATS flows = COUNT(*), bytes_out = SUM(network.bytes_out), bytes_in = SUM(network.bytes_in),
+        first = MIN(@timestamp), last = MAX(@timestamp)
+| EVAL gb_out = bytes_out / 1000000000.0
+
+// Per night
+FROM vs-network
+| WHERE source.ip == "10.20.50.11" AND destination.ip == "203.0.113.90"
+| EVAL day = DATE_TRUNC(1 day, @timestamp)
+| STATS flows = COUNT(*), bytes_out = SUM(network.bytes_out) BY day
+| SORT day ASC

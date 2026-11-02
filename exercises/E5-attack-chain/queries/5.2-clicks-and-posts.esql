@@ -1,0 +1,4 @@
+FROM vs-network
+| WHERE event.dataset == "proxy.web" AND url.domain == "vertlce-salud.example"
+| STATS hits = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name, source.hostname, source.ip, http.request.method, http.response.status_code
+| SORT first

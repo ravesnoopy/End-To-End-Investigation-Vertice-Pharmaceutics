@@ -1,0 +1,3 @@
+FROM vs-cambios
+| KEEP ticket, descripcion, inicio_utc, fin_utc, hosts_o_cuentas, responsable, estado
+| SORT inicio_utc ASC

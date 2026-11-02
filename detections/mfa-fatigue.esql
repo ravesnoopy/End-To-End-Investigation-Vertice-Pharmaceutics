@@ -1,0 +1,12 @@
+// Detection : MFA fatigue (push bombing)
+// MITRE     : T1621 - Multi-Factor Authentication Request Generation
+// Data view : vs-auth
+// Logic     : >= 5 unapproved pushes (timeout/denied) for one user within one hour
+// Expected  : 1 row on the case data (r.duarte, 2027-02-02 02:00 UTC, 27 failures, 1 IP)
+// Limitation: fixed 1-hour buckets can split a burst across two buckets
+FROM vs-auth
+| WHERE event.action == "mfa_push_sent" AND mfa.result IN ("timeout", "denied")
+| EVAL hour = DATE_TRUNC(1 hour, @timestamp)
+| STATS failed = COUNT(*), ips = COUNT_DISTINCT(source.ip), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name, hour
+| WHERE failed >= 5
+| SORT failed DESC

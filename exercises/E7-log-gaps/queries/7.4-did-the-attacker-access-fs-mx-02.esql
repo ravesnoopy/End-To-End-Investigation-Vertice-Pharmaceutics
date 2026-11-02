@@ -1,0 +1,14 @@
+// Endpoint activity on FS-MX-02 around the gap
+FROM vs-endpoint
+| WHERE host.name == "FS-MX-02" AND event.action != "agent_heartbeat"
+    AND @timestamp >= "2027-02-04T00:00:00Z" AND @timestamp <= "2027-02-08T00:00:00Z"
+| KEEP @timestamp, event.action, user.name, process.name, process.parent.name, process.command_line, process.executable, labels.managed_by, labels.ticket
+| SORT @timestamp ASC
+| LIMIT 50
+
+// Logons to FS-MX-02 (expected: 0 rows; absence is NOT proof by itself)
+FROM vs-auth
+| WHERE host.name == "FS-MX-02" AND @timestamp >= "2027-02-04T00:00:00Z" AND @timestamp <= "2027-02-08T00:00:00Z"
+| KEEP @timestamp, event.action, event.outcome, user.name, source.ip, winlog.logon.type
+| SORT @timestamp ASC
+| LIMIT 50

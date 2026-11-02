@@ -1,0 +1,19 @@
+// Who logs on to JMP-BR-01 via RDP (type 10)?
+FROM vs-auth
+| WHERE host.name == "JMP-BR-01" AND TO_STRING(winlog.logon.type) == "10"
+| STATS logons = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name, source.ip
+
+// Detail
+FROM vs-auth
+| WHERE host.name == "JMP-BR-01" AND TO_STRING(winlog.logon.type) == "10"
+| KEEP @timestamp, user.name, source.ip, event.outcome, winlog.logon.type
+| SORT @timestamp ASC
+| LIMIT 50
+
+// Baseline of r.duarte before the incident (hour of day, host, source)
+FROM vs-auth
+| WHERE user.name == "r.duarte" AND event.dataset == "windows.security" AND event.action == "logon"
+    AND @timestamp < "2027-02-02T00:00:00Z"
+| STATS logons = COUNT(*) BY host.name, source.ip, hour_utc = DATE_FORMAT("HH", @timestamp)
+| SORT hour_utc ASC
+| LIMIT 30

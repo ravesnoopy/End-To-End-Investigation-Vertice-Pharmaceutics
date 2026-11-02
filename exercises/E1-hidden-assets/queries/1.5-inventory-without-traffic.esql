@@ -1,0 +1,9 @@
+// Candidate idle assets listed in the inventory
+FROM vs-inventario
+| WHERE hostname LIKE "OLD-SRV-*"
+| KEEP asset_id, hostname, ip, tipo, sistema_operativo, sitio, criticidad, propietario
+
+// Verification: any traffic involving their subnet? (expected: 0 rows)
+FROM vs-network
+| WHERE CIDR_MATCH(source.ip, "10.10.60.0/24") OR CIDR_MATCH(destination.ip, "10.10.60.0/24")
+| STATS flows = COUNT(*) BY source.ip, destination.ip

@@ -1,0 +1,10 @@
+FROM vs-cloud
+| WHERE event.action == "GetObject" AND aws.access_key_id == "AKIAVSBKLG00NEW0001"
+| STATS events = COUNT(*), distinct_objects = COUNT_DISTINCT(aws.object.key), bytes_out = SUM(aws.bytes_out)
+| EVAL pct_of_bucket = ROUND(bytes_out / 61400000000.0 * 100, 1)   // 61.4 GB = case figure
+
+// Overall bucket activity
+FROM vs-cloud
+| WHERE aws.bucket == "vs-patient-records-prod"
+| STATS events = COUNT(*), distinct_objects = COUNT_DISTINCT(aws.object.key), bytes_out = SUM(aws.bytes_out) BY event.action
+| SORT events DESC

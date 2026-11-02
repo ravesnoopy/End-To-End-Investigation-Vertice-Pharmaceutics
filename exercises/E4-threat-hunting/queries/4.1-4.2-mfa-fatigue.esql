@@ -1,0 +1,22 @@
+// 4.1 Unapproved pushes by user and result
+FROM vs-auth
+| WHERE event.action == "mfa_push_sent" AND (mfa.result == "timeout" OR mfa.result == "denied")
+| STATS pushes = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY user.name, mfa.result
+| SORT pushes DESC
+| LIMIT 30
+
+// Control: all MFA outcomes (361 approved, 46 timeout, 13 denied)
+FROM vs-auth
+| WHERE event.dataset == "idp.mfa"
+| STATS n = COUNT(*) BY event.action, mfa.result
+
+// 4.2 Country, window and approved push for the offending IP
+FROM vs-auth
+| WHERE user.name == "r.duarte" AND event.action == "mfa_push_sent" AND source.ip == "203.0.113.44"
+| STATS pushes = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY source.geo.country_iso_code, mfa.result
+| SORT first ASC
+
+// 4.2 VPN sessions and assigned pool IP
+FROM vs-auth
+| WHERE source.ip == "203.0.113.44" AND event.action == "vpn_connected"
+| STATS connections = COUNT(*), first = MIN(@timestamp), last = MAX(@timestamp) BY vpn.assigned_ip
