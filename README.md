@@ -1,5 +1,5 @@
 <div align="center">
-
+![AWS Incident Response Demonstrated](assets/banner git.png)
 <img src="assets/banner.png" alt="Vértice Salud · Incident Response Assessment" width="100%">
 
 # Vértice Salud · Incident Response Assessment
