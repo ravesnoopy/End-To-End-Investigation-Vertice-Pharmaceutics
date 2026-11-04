@@ -1,6 +1,6 @@
 <div align="center">
-![AWS Incident Response Demonstrated](assets/banner.png)
-<img src="assets/banner.png" alt="Vértice Salud · Incident Response Assessment" width="100%">
+    
+![banner](assets/Banner.png)
 
 # Vértice Salud · Incident Response Assessment
 ### Case file VSI-2027-014 — from one phished password to 38.2 GB of patient records
