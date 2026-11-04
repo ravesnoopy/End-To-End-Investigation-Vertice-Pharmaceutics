@@ -196,4 +196,4 @@ All data is fictional. Domains end in `.example`, IPs come from documentation ra
 
 ## Author
 
-**Leonardo Romero** · [LinkedIn](https://www.linkedin.com/in/leonardoromerog) · MIT License
+**Leonardo Romero** · [LinkedIn](https://www.linkedin.com/in/leoromerog) · MIT License
